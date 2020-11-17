@@ -29,8 +29,8 @@ kern_init(void) {
 
     pmm_init();                 // init physical memory management
 
-    pic_init();                 // init interrupt controller
-    idt_init();                 // init interrupt descriptor table
+    pic_init();                 // init interrupt controller 中断控制器初始化
+    idt_init();                 // init interrupt descriptor table 中断描述符表
 
     clock_init();               // init clock interrupt
     intr_enable();              // enable irq interrupt

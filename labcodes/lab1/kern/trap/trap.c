@@ -32,6 +32,7 @@ static struct pseudodesc idt_pd = {
     sizeof(idt) - 1, (uintptr_t)idt};
 
 /* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
+//建立中断描述符表
 void idt_init(void)
 {
     /* LAB1 YOUR CODE : STEP 2 */
@@ -46,6 +47,11 @@ void idt_init(void)
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
+     //中断描述符表IDT的每一项都是中断描述符。
+     //用中断号作为index来查描述符。idt[index]为相应中断的描述符，
+     //记录了当产生index号中断后所要去应对中断服务例程的地址
+     //这个地址有两部分信息，一部分是段选择子，一部分是偏移。
+     //查找由硬件来实现。中断描述符表和全局描述符表都由软件建立。
     extern uintptr_t __vectors[];
     int i;
     for (i = 0; i < sizeof(idt) / sizeof(struct gatedesc); i++)
@@ -54,7 +60,9 @@ void idt_init(void)
     }
     // set for switch from user to kernel
     SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
-    // load the IDT
+    
+    //需要将IDT的起始地址告诉CPU
+    // load the IDT 加载中断描述符表的起始地址
     lidt(&idt_pd);
 }
 
