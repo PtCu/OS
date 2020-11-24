@@ -11,6 +11,8 @@ https://www.cnblogs.com/jokerjason/p/9578646.html
 |outb|向I/O端口写入一个字节|
 |LGDT|加载全局描述符|
 
+.word 在当前位置存放一个字
+
 
 ESP: 栈指针寄存器(extended stack pointer)，其内存放着一个指针，该指针永远指向系统栈最上面一个栈帧的栈顶
 

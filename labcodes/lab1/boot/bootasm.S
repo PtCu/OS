@@ -5,9 +5,9 @@
 # memory at physical address 0x7c00 and starts executing in real mode
 # with %cs=0 %ip=7c00.
 
-.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
-.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
-.set CR0_PE_ON,             0x1                     # protected mode enable flag
+.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector 该变量为代码段选择子，0000000000001000
+.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector 该变量为数据段选择子，0000000000010000
+.set CR0_PE_ON,             0x1                     # protected mode enable flag 该变量为 00000001，使能开关
 
 # start address should be 0:7c00, in real mode, the beginning address of the running bootloader
 .globl start
