@@ -28,7 +28,7 @@ struct vma_struct {
 
 // the control struct for a set of vma using the same PDT
 struct mm_struct {
-    list_entry_t mmap_list;        // linear list link which sorted by start addr of vma
+    list_entry_t mmap_list;        // linear list link which sorted by start addr of vma. Link items are vmas which have the same PDT.
     struct vma_struct *mmap_cache; // current accessed vma, used for speed purpose
     pde_t *pgdir;                  // the PDT of these vma
     int map_count;                 // the count of these vma
