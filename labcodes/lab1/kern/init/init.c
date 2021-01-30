@@ -9,12 +9,12 @@
 #include <intr.h>
 #include <pmm.h>
 #include <kmonitor.h>
-int kern_init(void) __attribute__((noreturn));
+void kern_init(void) __attribute__((noreturn));
 void grade_backtrace(void);
 static void lab1_switch_test(void);
 
-int
-kern_init(void) {
+void
+kern_init(void){
     extern char edata[], end[];
     memset(edata, 0, end - edata);
 
@@ -29,15 +29,15 @@ kern_init(void) {
 
     pmm_init();                 // init physical memory management
 
-    pic_init();                 // init interrupt controller 中断控制器初始化
-    idt_init();                 // init interrupt descriptor table 中断描述符表
+    pic_init();                 // init interrupt controller
+    idt_init();                 // init interrupt descriptor table
 
     clock_init();               // init clock interrupt
     intr_enable();              // enable irq interrupt
 
     //LAB1: CAHLLENGE 1 If you try to do it, uncomment lab1_switch_test()
     // user/kernel mode switch test
-    //lab1_switch_test();
+    lab1_switch_test();
 
     /* do nothing */
     while (1);
@@ -84,11 +84,24 @@ lab1_print_cur_status(void) {
 static void
 lab1_switch_to_user(void) {
     //LAB1 CHALLENGE 1 : TODO
+	asm volatile (
+	    "sub $0x8, %%esp \n"
+	    "int %0 \n"
+	    "movl %%ebp, %%esp"
+	    : 
+	    : "i"(T_SWITCH_TOU)
+	);
 }
-
+//int T_SWITCH_TOU表示发生这个中断
 static void
 lab1_switch_to_kernel(void) {
     //LAB1 CHALLENGE 1 :  TODO
+	asm volatile (
+	    "int %0 \n"
+	    "movl %%ebp, %%esp \n"
+	    : 
+	    : "i"(T_SWITCH_TOK)
+	);
 }
 
 static void
