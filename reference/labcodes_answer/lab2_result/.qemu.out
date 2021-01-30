@@ -1,0 +1,23 @@
+(THU.CST) os is loading ...
+
+Special kernel symbols:
+  entry  0xc010002a (phys)
+  etext  0xc01064c5 (phys)
+  edata  0xc0118970 (phys)
+  end    0xc0119a28 (phys)
+Kernel executable memory footprint: 103KB
+ebp:0xc0117f48 eip:0xc0100c01 args:0x00010094 0xc0118970 0xc0117f78 0xc01000cc 
+    kern/debug/kdebug.c:308: print_stackframe+33
+ebp:0xc0117f58 eip:0xc0100f82 args:0x00000000 0x00000000 0x00000000 0xc01000b7 
+    kern/debug/kmonitor.c:129: mon_backtrace+23
+ebp:0xc0117f78 eip:0xc01000cc args:0x00000000 0xc0117fa0 0xffff0000 0xc0117fa4 
+    kern/init/init.c:48: grade_backtrace2+32
+ebp:0xc0117f98 eip:0xc01000fb args:0x00000000 0xffff0000 0xc0117fc4 0xc010010f 
+    kern/init/init.c:53: grade_backtrace1+37
+ebp:0xc0117fb8 eip:0xc0100122 args:0x00000000 0xc010002a 0xffff0000 0xc0100133 
+    kern/init/init.c:58: grade_backtrace0+29
+ebp:0xc0117fd8 eip:0xc010014e args:0x00000000 0x00000000 0x00000000 0xc01064c8 
+    kern/init/init.c:63: grade_backtrace+37
+ebp:0xc0117ff8 eip:0xc0100090 args:0x00000000 0x00000000 0x0000ffff 0x40cf9a00 
+    kern/init/init.c:28: kern_init+101
+memory management: (null)
