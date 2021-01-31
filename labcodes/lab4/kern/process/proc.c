@@ -104,18 +104,19 @@ alloc_proc(void)
      *       uint32_t flags;                             // Process flag
      *       char name[PROC_NAME_LEN + 1];               // Process name
      */
-        proc->state = PROC_UNINIT;
-        proc->pid = -1;
-        proc->runs = 0;
-        proc->kstack = 0;
-        proc->need_resched = 0;
-        proc->parent = NULL;
-        proc->mm = NULL;
-        memset(&(proc->context), 0, sizeof(struct context));
-        proc->tf = NULL;
-        proc->cr3 = boot_cr3;
-        proc->flags = 0;
-        memset(proc->name, 0, PROC_NAME_LEN);
+              proc->state = PROC_UNINIT; //进程为初始化状态
+          proc->pid = -1;            //进程PID为-1
+          proc->runs = 0;            //初始化时间片
+          proc->kstack = 0;          //内核栈地址
+          proc->need_resched = 0;    //不需要调度
+          proc->parent = NULL;       //父进程为空
+          proc->mm = NULL;           //虚拟内存为空
+          memset(&(proc->context), 0, sizeof(struct 
+                 context));          //初始化上下文
+          proc->tf = NULL;           //中断帧指针为空
+          proc->cr3 = boot_cr3;      //页目录为内核页目录表的基址
+          proc->flags = 0;           //标志位为0
+          memset(proc->name, 0, PROC_NAME_LEN);//进程名为0
     }
     return proc;
 }
@@ -240,12 +241,14 @@ find_proc(int pid)
 int kernel_thread(int (*fn)(void *), void *arg, uint32_t clone_flags)
 {
     struct trapframe tf;
+    // 构建一个临时的中断栈帧tf，用于do_fork中的copy_thread函数(因为线程的创建和切换是需要利用CPU中断返回机制的)
     memset(&tf, 0, sizeof(struct trapframe));
-    tf.tf_cs = KERNEL_CS;
-    tf.tf_ds = tf.tf_es = tf.tf_ss = KERNEL_DS;
-    tf.tf_regs.reg_ebx = (uint32_t)fn;
-    tf.tf_regs.reg_edx = (uint32_t)arg;
-    tf.tf_eip = (uint32_t)kernel_thread_entry;
+    // 设置tf的值
+    tf.tf_cs = KERNEL_CS; // 内核线程，设置中断栈帧中的代码段寄存器CS指向内核代码段
+    tf.tf_ds = tf.tf_es = tf.tf_ss = KERNEL_DS; // 内核线程，设置中断栈帧中的数据段寄存器指向内核数据段
+    tf.tf_regs.reg_ebx = (uint32_t)fn; // 设置中断栈帧中的ebx指向fn的地址
+    tf.tf_regs.reg_edx = (uint32_t)arg; // 设置中断栈帧中的edx指向arg的起始地址
+    tf.tf_eip = (uint32_t)kernel_thread_entry; // 设置tf.eip指向kernel_thread_entry这一统一的初始化的内核线程入口地址
     return do_fork(clone_flags | CLONE_VM, 0, &tf);
 }
 
@@ -333,31 +336,39 @@ int do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf)
     //    5. insert proc_struct into hash_list && proc_list
     //    6. call wakup_proc to make the new child process RUNNABLE
     //    7. set ret vaule using child proc's pid
-    if (NULL == alloc_proc())
-    {
+    // 分配一个未初始化的线程控制块
+    if ((proc = alloc_proc()) == NULL) {
         goto fork_out;
     }
+    // 其父进程属于current当前进程
     proc->parent = current;
-    if (0 != setup_kstack(proc))
-    {
+
+    // 设置，分配新线程的内核栈
+    if (setup_kstack(proc) != 0) {
+        // 分配失败，回滚释放之前所分配的内存
         goto bad_fork_cleanup_proc;
     }
-    if (copy_mm(clone_flags, proc) != 0)
-    {
+    // 由于是fork，因此fork的一瞬间父子线程的内存空间是一致的（clone_flags决定是否采用写时复制）
+    if (copy_mm(clone_flags, proc) != 0) {
+        // 分配失败，回滚释放之前所分配的内存
         goto bad_fork_cleanup_kstack;
     }
+    // 复制proc线程时，设置proc的上下文信息
     copy_thread(proc, stack, tf);
 
     bool intr_flag;
     local_intr_save(intr_flag);
     {
+        // 生成并设置新的pid
         proc->pid = get_pid();
+        // 加入全局线程控制块哈希表
         hash_proc(proc);
+        // 加入全局线程控制块双向链表
         list_add(&proc_list, &(proc->list_link));
-        nr_process++;
+        nr_process ++;
     }
     local_intr_restore(intr_flag);
-
+    // 唤醒proc，令其处于就绪态PROC_RUNNABLE
     wakeup_proc(proc);
 
     ret = proc->pid;
