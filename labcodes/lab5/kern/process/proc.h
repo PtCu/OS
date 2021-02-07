@@ -57,6 +57,12 @@ struct proc_struct {
     int exit_code;                              // exit code (be sent to parent proc)
     uint32_t wait_state;                        // waiting state
     struct proc_struct *cptr, *yptr, *optr;     // relations between processes
+    /**
+     * cptr即child ptr，当前线程子线程(链表结构)
+     * yptr即younger sibling ptr；
+     * optr即older sibling ptr;
+     * cptr为当前线程的子线程双向链表头结点，通过yptr和optr可以找到关联的所有子线程
+     * */
 };
 
 #define PF_EXITING                  0x00000001      // getting shutdown
